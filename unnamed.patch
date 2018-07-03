@@ -1,0 +1,577 @@
+Index: app/src/main/java/com/example/yuhei/shukatsuapp/CalenderFragment.java
+===================================================================
+--- app/src/main/java/com/example/yuhei/shukatsuapp/CalenderFragment.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/java/com/example/yuhei/shukatsuapp/CalenderFragment.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
+@@ -1,35 +0,0 @@
+-package com.example.yuhei.shukatsuapp;
+-
+-import android.app.DatePickerDialog;
+-import android.os.Bundle;
+-import android.support.annotation.NonNull;
+-import android.support.annotation.Nullable;
+-import android.support.v4.app.Fragment;
+-import android.view.LayoutInflater;
+-import android.view.View;
+-import android.view.ViewGroup;
+-import android.widget.CalendarView;
+-import android.widget.DatePicker;
+-
+-import java.util.Calendar;
+-
+-public class CalenderFragment extends Fragment {
+-
+-    CalendarView calendarView;
+-
+-    @Nullable
+-    @Override
+-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+-        return inflater.inflate(R.layout.calendar, null);
+-
+-
+-
+-
+-        }
+-
+-
+-
+-
+-
+-
+-}
+Index: app/src/main/java/com/example/yuhei/shukatsuapp/HomeFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/yuhei/shukatsuapp/HomeFragment.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/java/com/example/yuhei/shukatsuapp/HomeFragment.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
+@@ -1,18 +0,0 @@
+-package com.example.yuhei.shukatsuapp;
+-
+-import android.os.Bundle;
+-import android.support.annotation.NonNull;
+-import android.support.annotation.Nullable;
+-import android.support.v4.app.Fragment;
+-import android.view.LayoutInflater;
+-import android.view.View;
+-import android.view.ViewGroup;
+-
+-public class HomeFragment extends Fragment {
+-
+-    @Nullable
+-    @Override
+-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+-        return inflater.inflate(R.layout.home,null);
+-    }
+-}
+Index: app/src/main/java/com/example/yuhei/shukatsuapp/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/yuhei/shukatsuapp/MainActivity.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/java/com/example/yuhei/shukatsuapp/MainActivity.java	(date 1529060749000)
+@@ -22,7 +22,7 @@
+                     break;
+ 
+                 case R.id.navigation_calendar:
+-                    fragment = new CalenderFragment();
++                    fragment = new CalendarFragment();
+                     break;
+ 
+                 case R.id.navigation_todo:
+Index: app/src/main/java/com/example/yuhei/shukatsuapp/TodoFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/yuhei/shukatsuapp/TodoFragment.java	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/java/com/example/yuhei/shukatsuapp/TodoFragment.java	(date 1529052842000)
+@@ -1,131 +1,196 @@
+ package com.example.yuhei.shukatsuapp;
+ 
+-import android.app.AlertDialog;
+ import android.database.Cursor;
+-import android.database.sqlite.SQLiteDatabase;
+-import android.database.sqlite.SQLiteStatement;
+ import android.os.Bundle;
+ import android.support.annotation.NonNull;
+ import android.support.annotation.Nullable;
++import android.support.design.widget.FloatingActionButton;
+ import android.support.v4.app.Fragment;
+-import android.util.Log;
+ import android.view.LayoutInflater;
+-import android.view.Menu;
+-import android.view.MenuInflater;
+ import android.view.MenuItem;
+ import android.view.View;
+ import android.view.ViewGroup;
+-import android.widget.ArrayAdapter;
+ import android.widget.Button;
+ import android.widget.EditText;
+ import android.widget.ListView;
+-import android.widget.AdapterView;
+ import android.app.Dialog;
+-import android.app.DialogFragment;
+-import android.app.FragmentManager;
+-import android.content.DialogInterface;
++import android.widget.Toast;
+ 
+-import org.apache.commons.io.FileUtils;
++import com.example.yuhei.shukatsuapp.mDataBase.DBAdapter;
+ 
+-import java.io.File;
+-import java.io.IOException;
++import com.example.yuhei.shukatsuapp.mDataObject.Spacecraft;
++import com.example.yuhei.shukatsuapp.mListView.CustomAdapter;
++
+ import java.util.ArrayList;
+ 
+ public class TodoFragment extends Fragment {
+ 
+-    private ArrayList<String> items;
+-    private ArrayAdapter<String> itemAdapter;
+-    private ListView lvItems;
+-    private Button button;
+-
+-
+-  /* private void readItems() {
+-        File fileDir = getFilesDira();
+-                File todoFile = new File(fileDir, "todo.txt");
+-        try {
+-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+-        } catch (IOException e) {
+-            items = new ArrayList<String>();
+-        }
+-    }
+-    private void writeItems(){
+-        File filesDir = getFilesDir();
+-        File todoFile = new File(filesDir,"todo.txt");
+-        try{
+-            FileUtils.writeLines(todoFile,items);
+-        }catch (IOException e){
+-            e.printStackTrace();
+-        }
+-    }*/
++    ListView lv;
++    EditText nameEditText;
++    Button saveBtn, retrieveBtn;
++    ArrayList<Spacecraft> spacecrafts = new ArrayList<>();
++    CustomAdapter adapter;
++    final Boolean forUpdate = true;
+ 
+ 
+     @Nullable
+     @Override
+     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+-        final View view = inflater.inflate(R.layout.todo, null);
++        View view = inflater.inflate(R.layout.todo, container,false);
++        lv = view.findViewById(R.id.todoList);
++        adapter = new CustomAdapter(getContext(), spacecrafts);
+ 
++        this.getSpacecrafts();
++         lv.setAdapter(adapter);
+ 
+-        lvItems = view.findViewById(R.id.todoList);
+-        items = new ArrayList<>();
++        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
++        fab.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View view) {
++                displayDialog(false);
++            }
++        });
++        return view;
++    }
+ 
+-        itemAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, items);
++    private void displayDialog(Boolean forUpdate) {
++        Dialog d = new Dialog(getContext());
++        d.setTitle("SQLITE DATA");
++        d.setContentView(R.layout.tododialog);
+ 
+-        lvItems.setAdapter(itemAdapter);
+-        items.add("First item");
+-        items.add("Second Items");
++        nameEditText = (EditText) d.findViewById(R.id.todoEditTxt);
++        saveBtn = (Button) d.findViewById(R.id.addButton);
++        retrieveBtn= (Button)d.findViewById(R.id.retrieveBtn);
+ 
+-        button = view.findViewById(R.id.addButton);
+-        button.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View v) {
+-                EditText editText = view.findViewById(R.id.editText);
+-                String itemText = editText.getText().toString();
+-
+-               // DatabaseHelper helper = new DatabaseHelper(TodoFragment.this);
+-               /* SQLiteDatabase db = helper.getWritableDatabase();
+-                try{
+-                    String sqlDelete = "DELETE FROM tododatabase WHERE _id = ?";
+-                    SQLiteStatement stmt = db.compileStatement(sqlDelete);
+-
+-                    Cursor cursor = db.query(sql)
+-                }*/
+-                itemAdapter.add(itemText);
+-                //writeItems();
+-                editText.setText("");
+-            }
+-        });
++
++        if (!forUpdate) {
++            saveBtn.setOnClickListener(new View.OnClickListener() {
++                @Override
++                public void onClick(View v) {
++                    save(nameEditText.getText().toString());
++                }
++            });
++            retrieveBtn.setOnClickListener(new View.OnClickListener() {
++                @Override
++                public void onClick(View v) {
++                    getSpacecrafts();
++                }
++            });
+ 
+-        lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+-            @Override
+-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+-                items.remove(position);
+-                itemAdapter.notifyDataSetChanged();
+-                //writeItems();
+-                return true;
+-            }
+-        });
+-        return view;
+-    }
+-
+-    @Override
+-    public void onCreate(@Nullable Bundle savedInstanceState) {
+-        super.onCreate(savedInstanceState);
+-         //readItems();
+-    }
+-}
++        } else {
++
++            //SET SELECTED TEXT
++            nameEditText.setText(adapter.getSelectedItemName());
++
++            saveBtn.setOnClickListener(new View.OnClickListener() {
++                @Override
++                public void onClick(View v) {
++                    update(nameEditText.getText().toString());
++                }
++            });
++            retrieveBtn.setOnClickListener(new View.OnClickListener() {
++                @Override
++                public void onClick(View v) {
++                    getSpacecrafts();
++                }
++            });
++        }
++
++        d.show();
++
++    }
+ 
+-    /*private void setupListViewListener() {
+-        lvItems.setOnLongClickListener(new AdapterView.OnItemLongClickListener() {
+-            @Override
+-            public boolean onItemLongClick(AdapterView<?> adapter, View item, int pos, long id) {
+-                items.remove(pos);
+-                itemAdapter.notifyDataSetChanged();
+-                return true;
+-            }
+-        });
++    //SAVE
++    private void save(String name) {
++        DBAdapter db = new DBAdapter(getContext());
++        db.openDB();
++        boolean saved = db.add(name);
++
++        if (saved) {
++            nameEditText.setText("");
++            getSpacecrafts();
++        } else {
++            Toast.makeText(getContext(), "Unable To Save", Toast.LENGTH_SHORT).show();
++        }
++    }
++
++    //RETRIEVE OR GETSPACECRAFTS
++    private void getSpacecrafts() {
++        spacecrafts.clear();
++        DBAdapter db = new DBAdapter(getContext());
++        db.openDB();
++        Cursor c = db.retrieve();
++        Spacecraft spacecraft = null;
++
++        while (c.moveToNext()) {
++            int id = c.getInt(0);
++            String name = c.getString(1);
++
++            spacecraft = new Spacecraft();
++            spacecraft.setId(id);
++            spacecraft.setName(name);
++
++            spacecrafts.add(spacecraft);
++        }
++
++        db.closeDB();
++        lv.setAdapter(adapter);
++    }
++
++    //UPDATE OR EDIT
++    private void update(String newName) {
++        //GET ID OF SPACECRAFT
++        int id = adapter.getSelectedItemID();
++
++        //UPDATE IN DB
++        DBAdapter db = new DBAdapter(getContext());
++        db.openDB();
++        boolean updated = db.update(newName, id);
++        db.closeDB();
++
++        if (updated) {
++            nameEditText.setText(newName);
++            getSpacecrafts();
++        } else {
++            Toast.makeText(getContext(), "Unable To Update", Toast.LENGTH_SHORT).show();
++        }
++
++    }
++
++    private void delete() {
++        //GET ID
++        int id = adapter.getSelectedItemID();
++
++        //DELETE FROM DB
++        DBAdapter db = new DBAdapter(getContext());
++        db.openDB();
++        boolean deleted = db.delete(id);
++        db.closeDB();
++
++        if (deleted) {
++            getSpacecrafts();
++        } else {
++            Toast.makeText(getContext(), "Unable To Delete", Toast.LENGTH_SHORT).show();
++        }
++    }
++
++    @Override
++    public boolean onContextItemSelected(MenuItem item) {
++        CharSequence title = item.getTitle();
++        if (title == "NEW") {
++            displayDialog(!forUpdate);
++
++        } else if (title == "EDIT") {
++            displayDialog(forUpdate);
++
++        } else if (title == "DELETE") {
++            delete();
++        }
++
++        return super.onContextItemSelected(item);
+     }
++}
+ 
+-    }*/
+ 
+ 
+ 
+Index: app/src/main/res/layout/activity_main.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/activity_main.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/res/layout/activity_main.xml	(date 1529060854000)
+@@ -16,7 +16,7 @@
+         app:layout_constraintLeft_toLeftOf="parent"
+         app:layout_constraintTop_toTopOf="parent"
+         android:textAppearance="@style/Base.TextAppearance.AppCompat.Large">
+-        />
++
+     </FrameLayout>
+ 
+     <android.support.design.widget.BottomNavigationView
+Index: app/src/main/res/layout/calendar.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/calendar.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/res/layout/calendar.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
+@@ -1,15 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    xmlns:tools="http://schemas.android.com/tools"
+-    android:layout_width="match_parent"
+-    android:layout_height="match_parent"
+-    tools:context=".CalenderFragment"
+-    android:orientation="vertical">
+-
+-    <CalendarView
+-        android:id="@+id/calender"
+-        android:layout_width="match_parent"
+-        android:layout_height="369dp">
+-
+-    </CalendarView>
+-</LinearLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/home.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/home.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/res/layout/home.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
+@@ -1,25 +0,0 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+-    android:layout_width="match_parent"
+-    android:layout_height="match_parent"
+-    xmlns:tools="http://schemas.android.com/tools"
+-    android:background="#fff"
+-    tools:context=".HomeFragment"
+-    android:orientation="vertical">
+-
+-        <TextView
+-            android:layout_gravity="center"
+-            android:layout_width="wrap_content"
+-            android:layout_height="wrap_content"
+-            android:layout_alignParentTop="true"
+-            android:layout_centerHorizontal="true"
+-            android:layout_marginTop="120dp"
+-            android:text="Shu-katsu App"
+-            android:textSize="50dp"
+-            android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
+-            android:textColor="#000"
+-            android:textStyle="bold|italic"/>
+-
+-
+-
+-</LinearLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/todo.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/todo.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/res/layout/todo.xml	(date 1529052842000)
+@@ -1,39 +1,28 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<RelativeLayout
+-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+-    android:layout_height="match_parent">
++<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:tools="http://schemas.android.com/tools"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    tools:context=".TodoFragment">
++
++
++    <ListView
++        android:id="@+id/todoList"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent">
+ 
+-    <TextView
+-        android:id="@+id/todo"
+-        android:layout_width="wrap_content"
++
++    </ListView>
++
++    <android.support.design.widget.FloatingActionButton
++        android:id="@+id/fab"
++        android:layout_width="200dp"
+         android:layout_height="wrap_content"
+-        android:text="ToDo Lists"
+-        android:layout_centerHorizontal="true"
+-        />
+-
+-    <EditText
+-        android:id="@+id/editText"
+-        android:layout_width="302dp"
+-        android:layout_height="wrap_content"
+-        android:layout_below="@+id/todo" />
+-
+-    <Button
+-        android:id="@+id/addButton"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
++        android:layout_alignParentBottom="true"
+         android:layout_alignParentEnd="true"
+-        android:layout_below="@+id/todo"
+-        android:text="add tasks"
+-
+-        />
+-
+-    <ListView
+-        android:id="@+id/todoList"
+-        android:layout_width="wrap_content"
+-        android:layout_height="wrap_content"
+-        android:layout_below="@+id/editText"
+-        >
+-
+-    </ListView>
++        android:layout_gravity="bottom|end"
++        android:src="@drawable/ic_action_todo"
++        tools:layout_editor_absoluteX="328dp"
++        tools:layout_editor_absoluteY="397dp" />
+ 
+ </RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/src/main/AndroidManifest.xml	(date 1528987773000)
+@@ -1,9 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+     package="com.example.yuhei.shukatsuapp">
+-    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+ 
+     <application
+         android:allowBackup="true"
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision 8cba6b43e012245455a1775f07f8dc2a875bb940)
++++ app/build.gradle	(date 1528987773000)
+@@ -2,6 +2,7 @@
+ 
+ android {
+     compileSdkVersion 27
++    buildToolsVersion '27.0.3'
+     defaultConfig {
+         applicationId "com.example.yuhei.shukatsuapp"
+         minSdkVersion 17
+@@ -19,7 +20,6 @@
+ }
+ 
+ dependencies {
+-    implementation 'org.apache.commons:commons-io:1.3.2'
+     implementation fileTree(dir: 'libs', include: ['*.jar'])
+     implementation 'com.android.support:appcompat-v7:27.1.1'
+     implementation 'com.android.support:design:27.1.1'
+diff --git .idea/caches/build_file_checksums.ser .idea/caches/build_file_checksums.ser
+index 4c909fce2070d7b6f7bc7398d79f439dc6d27dba..86f246ae2298e24ed9544e408d922189bb66d58e
+GIT binary patch
+literal 535
+zc${1FmVvdnh`~NNKUXg?FQq6yGexf?KR>5fFEb@IQ7^qHF(oHeub?PDD>b=9F91S2
+zm1gFoxMk*~I%lLNXBU^|7Q2L-Ts|(GuF1r}<i#MFTj`TnT;dMa8(f)}9Fm!vT3nKt
+zTj0aMpIeEdv4nx&Co8cmQNOe#Ge_SyvB0{bfPsNA`QOnW>_B%3g5>l-a(W(##Th_(
+zR`y#54~r#SWM*J;W8likPfT%3OfJbU@?_vF$tX%K&dAS6sVJ~_U;qK0at<IV0K{xS
+zi;7cAN;31(i=n<MEn;Abc3SgU{0AFH$O9$@29V7R0?YqN9iEuE^{GZwTyUDcs&om1
+znto_;YEiL%Wobrgran}+J|bueQj1D5Q;SOr8R{6=Kt^1V?YY^{u!-em1Lur4Kb-1H
+z7<iIEK?buJu2AQ-+wWZ+TAzNF9B>u2dmmB4Adr)voS1{v)W=W%-%(aes46xTVsSRx
+zx2}Xi5RV%Kc9#X5f2;Y!VwJ<ef=@~MK%)~23iPqNV*+Q3O30a}Q#-rZBNsf&nqC0_
+DWJbJH
+
